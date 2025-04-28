@@ -1,0 +1,38 @@
+groups:
+- name: system_alerts
+  rules:
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU Usage (instance {{ $labels.instance }})"
+      description: "CPU usage is above 80% on instance {{ $labels.instance }} for more than 5 minutes."
+
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes * 100 > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High Memory Usage (instance {{ $labels.instance }})"
+      description: "Memory usage is above 80% on instance {{ $labels.instance }} for more than 5 minutes."
+
+  - alert: HighDiskUsage
+    expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High Disk Usage (instance {{ $labels.instance }})"
+      description: "Disk usage is above 80% on instance {{ $labels.instance }} for more than 5 minutes."
+
+  - alert: ServiceDown
+    expr: up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Service Down (instance {{ $labels.instance }})"
+      description: "Service {{ $labels.job }} is down on instance {{ $labels.instance }}."
